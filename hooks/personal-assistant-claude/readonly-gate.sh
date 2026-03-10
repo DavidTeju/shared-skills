@@ -107,7 +107,7 @@ if [ "$TOOL_NAME" = "Bash" ]; then
   # Split on |, &&, ;, || and check each segment's leading command.
   # Note: tee and xargs intentionally excluded — they can write/exec arbitrary commands.
   # Note: node -e/python -c intentionally excluded — full languages can do anything.
-  READONLY_CMDS="^(ls|find|cat|head|tail|wc|file|stat|du|df|echo|printf|date|whoami|hostname|uname|env|printenv|which|type|command|realpath|dirname|basename|sort|uniq|tr|cut|awk|sed|grep|rg|jq|yq|diff|comm|tree|less|more|bat|fd|fzf|ps|top|htop|uptime|free|id|groups|locale|man|help|test|true|false|nproc|getconf|read)$"
+  READONLY_CMDS="^(cd|pwd|ls|find|cat|head|tail|wc|file|stat|du|df|echo|printf|date|whoami|hostname|uname|env|printenv|which|type|command|realpath|dirname|basename|sort|uniq|tr|cut|awk|sed|grep|rg|jq|yq|diff|comm|tree|less|more|bat|fd|fzf|ps|top|htop|uptime|free|id|groups|locale|man|help|test|true|false|nproc|getconf|read)$"
   # Multi-word read-only patterns (checked against stripped segment)
   GIT_READ="^[[:space:]]*git[[:space:]]+(log|status|diff|branch|show|remote|rev-parse|describe|shortlog|blame|ls-files|ls-tree|config[[:space:]]+--get)"
   GOG_READ="^[[:space:]]*gog[[:space:]]+(calendar|contacts|gmail|drive|sheets|docs)[[:space:]]+(events|list|get|search|read|view|messages[[:space:]]+search|cat|export|metadata)"
