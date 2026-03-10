@@ -107,11 +107,15 @@ if [ "$TOOL_NAME" = "Bash" ]; then
   # Split on |, &&, ;, || and check each segment's leading command.
   # Note: tee and xargs intentionally excluded — they can write/exec arbitrary commands.
   # Note: node -e/python -c intentionally excluded — full languages can do anything.
-  READONLY_CMDS="^(cd|pwd|ls|find|cat|head|tail|wc|file|stat|du|df|echo|printf|date|whoami|hostname|uname|env|printenv|which|type|command|realpath|dirname|basename|sort|uniq|tr|cut|awk|sed|grep|rg|jq|yq|diff|comm|tree|less|more|bat|fd|fzf|ps|top|htop|uptime|free|id|groups|locale|man|help|test|true|false|nproc|getconf|read)$"
+  READONLY_CMDS="^(cd|pwd|ls|find|cat|head|tail|wc|file|stat|du|df|echo|printf|date|whoami|hostname|uname|env|printenv|which|type|command|realpath|dirname|basename|sort|uniq|tr|cut|awk|sed|grep|rg|jq|yq|diff|comm|tree|less|more|bat|fd|fzf|ps|top|htop|uptime|free|id|groups|locale|man|help|test|true|false|nproc|getconf|read|shasum|md5|md5sum|sha256sum|column|rev|tac|nl|fold|paste|join|expand|unexpand)$"
   # Multi-word read-only patterns (checked against stripped segment)
   GIT_READ="^[[:space:]]*git[[:space:]]+(log|status|diff|branch|show|remote|rev-parse|describe|shortlog|blame|ls-files|ls-tree|config[[:space:]]+--get)"
   GOG_READ="^[[:space:]]*gog[[:space:]]+(calendar|contacts|gmail|drive|sheets|docs)[[:space:]]+(events|list|get|search|read|view|messages[[:space:]]+search|cat|export|metadata)"
   BEEPER_READ="^[[:space:]]*(beeper-desktop-cli|beeper|scripts/beeper)[[:space:]]+(chats|messages|accounts|search|info)[[:space:]]*(list|search|retrieve|--|$)"
+  GH_READ="^[[:space:]]*gh[[:space:]]+(pr[[:space:]]+(list|view|status|diff|checks)|issue[[:space:]]+(list|view|status)|run[[:space:]]+(list|view)|release[[:space:]]+(list|view)|repo[[:space:]]+view|auth[[:space:]]+status|search[[:space:]]|workflow[[:space:]]+(list|view))"
+  # gh api is read-only only if it doesn't contain -X (method override) or --method
+  GH_API_READ="^[[:space:]]*gh[[:space:]]+api[[:space:]]"
+  GH_API_WRITE="-X[[:space:]]|--method[[:space:]]|-f[[:space:]]|-F[[:space:]]|--input[[:space:]]"
 
   ALL_READONLY=true
   # Split command into segments on |, &&, ;, ||
@@ -132,12 +136,18 @@ if [ "$TOOL_NAME" = "Bash" ]; then
       is_readonly=true
     fi
     if [ "$is_readonly" = false ]; then
-      for pattern in "$GIT_READ" "$GOG_READ" "$BEEPER_READ"; do
+      for pattern in "$GIT_READ" "$GOG_READ" "$BEEPER_READ" "$GH_READ"; do
         if echo "$stripped" | grep -qE "$pattern"; then
           is_readonly=true
           break
         fi
       done
+    fi
+    # gh api needs special handling: read-only unless it has -X/-f/-F/--method/--input
+    if [ "$is_readonly" = false ] && echo "$stripped" | grep -qE "$GH_API_READ"; then
+      if ! echo "$stripped" | grep -qE -- "$GH_API_WRITE"; then
+        is_readonly=true
+      fi
     fi
 
     if [ "$is_readonly" = false ]; then
