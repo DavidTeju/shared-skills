@@ -6,7 +6,6 @@ description: |
   commits, meaningful messages, what not to commit, and ensuring commit messages reflect
   all changes in the diff.
 author: David Tejuosho
-user-invocable: false
 ---
 
 # Git Commit Best Practices
