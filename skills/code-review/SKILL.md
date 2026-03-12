@@ -8,7 +8,8 @@ description: |
   to "find missed tasks" or "what slipped through the cracks". Covers security,
   bugs, edge cases, code quality, deprecated code, readability, best practices,
   and missed task detection. Outputs findings to a markdown file organized by severity.
-author: Claude Code---
+author: Claude Code
+---
 
 # Comprehensive Codebase Code Review
 

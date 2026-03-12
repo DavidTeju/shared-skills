@@ -6,7 +6,8 @@ description: |
   (2) user wants to parallelize work across multiple Claude agents,
   (3) user asks to "set up orchestration" or "coordinate agents" for a phase.
   Analyzes dependencies, determines agent count, generates prompts and coordination docs.
-author: Claude Code---
+author: Claude Code
+---
 
 # Multi-Agent Orchestration Setup
 

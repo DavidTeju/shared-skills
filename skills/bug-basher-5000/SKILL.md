@@ -8,7 +8,8 @@ description: |
   confusing UX, broken features, bad error messages, logical inconsistencies. Uses parallel
   agents that scale with codebase size (3-25 agents). Outputs BUGS_FOUND.md organized by
   severity with quick wins surfaced first. Agents perform root cause analysis for each bug.
-author: Claude Code---
+author: Claude Code
+---
 
 # Bug Basher 5000
 

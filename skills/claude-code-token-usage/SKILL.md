@@ -6,7 +6,8 @@ description: |
   project costs, (3) analyzing Claude Code usage patterns, (4) comparing usage
   across projects. Covers parsing ~/.claude session files, extracting token
   counts, and calculating estimated costs with prompt caching.
-author: Claude Code---
+author: Claude Code
+---
 
 # Claude Code Token Usage Analysis
 

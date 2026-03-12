@@ -8,7 +8,8 @@ description: |
   ralph-wiggum plugin is not in the marketplace. Covers: manual bash loop setup, PROMPT.md
   design, PROGRESS.md tracker, completion signal gotchas, oscillation detection, permission
   configuration, and when NOT to use Ralph loops.
-author: Claude Code---
+author: Claude Code
+---
 
 # Ralph Wiggum Loop — Manual Setup for Claude Code
 

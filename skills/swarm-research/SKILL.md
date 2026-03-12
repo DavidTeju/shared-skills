@@ -10,7 +10,8 @@ description: |
   tech stack decisions, gear purchasing, event venue selection. Key insight: some agents
   get full criteria (targeted search) while others get minimal context (wider net,
   avoids confirmation bias). Different models surface different results.
-author: Claude Code---
+author: Claude Code
+---
 
 # Swarm Research
 
