@@ -11,7 +11,7 @@
 # SAFETY PRINCIPLE: When in doubt, defer. False negatives (asking the user) are
 # safe; false positives (auto-approving a write) are not.
 #
-# Tests: .claude/hooks/test_readonly_gate.sh
+# Tests: hooks/user-level/test_readonly_gate.sh
 
 use strict;
 use warnings;
@@ -145,7 +145,7 @@ my %READONLY_CMDS = map { $_ => 1 } qw(
 
 my $FIND_WRITE_FLAGS  = qr/-(?:exec|execdir|delete|ok|okdir|fprint|fprint0|fprintf|fls)\b/;
 my $AWK_WRITE_FLAGS   = qr/(?:\bsystem\s*\(|-f\s|\bgetline\b)/;
-# Awk internal pipe: | "cmd" — safe only if cmd's first word is in READONLY_CMDS.
+# Awk internal pipe: | "cmd" — safe only if cmd is provably read-only via is_cmd_readonly.
 my $AWK_PIPE_PATTERN  = qr/\|\s*\\?"([^"\\]+)/;
 my $SED_SEGMENT_WRITE = qr/(?:-f\s|\bw\s+\/|['"][0-9]*e\s|\/e['"]|\/e\s|\/e$)/;
 my $SORT_WRITE_FLAG   = qr/\s-o(?:\s|$)/;
@@ -261,7 +261,7 @@ sub is_cmd_readonly {
         # Flag-level exceptions: some readonly commands have dangerous flags.
         return 0 if $word eq "find" && $cmd =~ $FIND_WRITE_FLAGS;
         return 0 if $word eq "awk"  && $cmd =~ $AWK_WRITE_FLAGS;
-        # Awk internal pipe: | "cmd" — block unless target is a known readonly command.
+        # Awk internal pipe: | "cmd" — block unless target passes is_cmd_readonly.
         if ($word eq "awk") {
             while ($cmd =~ /$AWK_PIPE_PATTERN/g) {
                 my $target = $1;
@@ -415,7 +415,7 @@ sub classify_bash {
         return 0 if $command =~ $pat;
     }
 
-    # Check for file-writing redirects (after stripping safe stderr merges).
+    # Check for file-writing redirects (after stripping safe /dev/null and fd redirects).
     my $for_redirect = strip_safe_redirects($command);
     return 0 if $for_redirect =~ $REDIRECT;
 
