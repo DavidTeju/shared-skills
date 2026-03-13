@@ -79,9 +79,6 @@ my @READONLY_TOOL_PATTERNS = (
     # Notion MCP — read-only subset
     qr/^mcp__notion__notion-(fetch|search|get-comments|get-teams|get-users)$/,
 
-    # Playwright — observation-only tools
-    qr/^mcp__playwright__browser_(snapshot|take_screenshot|console_messages|network_requests)$/,
-
     # Serena — read/inspect tools
     qr/^mcp__plugin_serena_serena__(
         read_file|list_dir|find_file|search_for_pattern|get_symbols_overview
@@ -138,7 +135,7 @@ my %READONLY_CMDS = map { $_ => 1 } qw(
     basename sort uniq tr cut awk sed grep rg jq yq diff comm tree less
     more bat fd fzf ps top htop uptime free id groups locale man help
     test true false nproc getconf read shasum md5 md5sum sha256sum column
-    rev tac nl fold paste join expand unexpand sw_vers xcode-select cal
+    rev tac nl fold paste join expand unexpand base64 sw_vers xcode-select cal
     dig nslookup host ping traceroute whois ifconfig netstat lsof mdfind
     sysctl diskutil system_profiler scutil pbpaste
 );
@@ -147,7 +144,9 @@ my %READONLY_CMDS = map { $_ => 1 } qw(
 # These flags make otherwise-safe commands perform writes.
 
 my $FIND_WRITE_FLAGS  = qr/-(?:exec|execdir|delete|ok|okdir|fprint|fprint0|fprintf|fls)\b/;
-my $AWK_WRITE_FLAGS   = qr/(?:\bsystem\s*\(|-f\s)/;
+my $AWK_WRITE_FLAGS   = qr/(?:\bsystem\s*\(|-f\s|\bgetline\b)/;
+# Awk internal pipe: | "cmd" — safe only if cmd's first word is in READONLY_CMDS.
+my $AWK_PIPE_PATTERN  = qr/\|\s*\\?"([^"\\]+)/;
 my $SED_SEGMENT_WRITE = qr/(?:-f\s|\bw\s+\/|['"][0-9]*e\s|\/e['"]|\/e\s|\/e$)/;
 my $SORT_WRITE_FLAG   = qr/\s-o(?:\s|$)/;
 my $LESS_WRITE_FLAG   = qr/(?:\s-o(?:\s|$)|\+!)/;
@@ -182,11 +181,17 @@ my $PKG_READ = qr/^\s*(?:npm|yarn|pnpm)\s+(?:list|info|view|audit|outdated|pack|
                   |^\s*brew\s+(?:list|info|search|doctor|deps|leaves|outdated|config|tap|--prefix)
                   |^\s*pip\s+(?:list|show|freeze|check|config)/x;
 
-my @MULTI_WORD_READ = ($GIT_READ, $GOG_READ, $BEEPER_READ, $GH_READ, $DOCKER_READ, $PKG_READ);
+my $PLAYWRIGHT_READ = qr/^\s*(?:npx\s+)?playwright-cli\s+(?:-s=[^\s]+\s+)?
+                                (?:snapshot|screenshot|console|network|tab-list|list
+                                   |cookie-(?:list|get)|localstorage-(?:list|get)
+                                   |sessionstorage-(?:list|get)|route-list)
+                                (?:\s|$)/x;
+
+my @MULTI_WORD_READ = ($GIT_READ, $GOG_READ, $BEEPER_READ, $GH_READ, $DOCKER_READ, $PKG_READ, $PLAYWRIGHT_READ);
 
 # ── Git-specific write checks ──
 # These catch write operations hiding inside "git read" commands.
-my $GIT_OUTPUT_FLAG  = qr/--output/;
+my $GIT_OUTPUT_FLAG  = qr/--output|--ext-diff/;
 my $GIT_REMOTE_WRITE = qr/remote\s+(?:remove|set-url|add|rename|prune)/;
 my $GIT_BRANCH_WRITE = qr/branch\s+(?:--move|--set-upstream|-[muM](?:\s|$))/;
 
@@ -197,7 +202,15 @@ my $GH_API_METHOD_WRITE = qr/--method[= ]*(?:POST|PUT|PATCH|DELETE|post|put|patc
 
 # ── curl classification ──
 my $CURL_READ        = qr/^\s*curl\s/;
-my $CURL_WRITE_FLAGS = qr/-[XdToF]|--data|--output|--upload-file|--form/;
+my $CURL_WRITE_FLAGS = qr/
+    -[XdToOFDKc]                                            # short flags: method, data, upload, output, remote-name, form, dump-header, config, cookie-jar
+    |--(?:data|json|output|upload-file|form                  # POST\/write body flags
+        |remote-name(?:-all)?                                # save to local filename
+        |config|libcurl                                      # arbitrary config, C source output
+        |trace(?:-ascii)?                                    # trace writes to file
+        |dump-header|cookie-jar                              # header\/cookie file writes
+        |create-dirs)                                        # dir creation (paired with -o)
+/x;
 
 # ── Version flag (any-command --version / -v / version) ──
 my $VERSION_CMD = qr/^\s*[a-zA-Z][a-zA-Z0-9_.-]*\s+(?:--version|-[vV]|version)\s*$/;
@@ -238,12 +251,24 @@ sub is_cmd_readonly {
 
     my ($word) = split(/\s+/, $cmd, 2);
 
+    # Strip path prefix from command word (e.g. /usr/bin/sort → sort).
+    (my $bare_word = $word) =~ s|^.*/||;
+    $word = $bare_word if $bare_word ne "" && $READONLY_CMDS{$bare_word};
+
     # ── Single-word readonly commands ──
     if ($READONLY_CMDS{$word}) {
 
         # Flag-level exceptions: some readonly commands have dangerous flags.
         return 0 if $word eq "find" && $cmd =~ $FIND_WRITE_FLAGS;
         return 0 if $word eq "awk"  && $cmd =~ $AWK_WRITE_FLAGS;
+        # Awk internal pipe: | "cmd" — block unless target is a known readonly command.
+        if ($word eq "awk") {
+            while ($cmd =~ /$AWK_PIPE_PATTERN/g) {
+                my $target = $1;
+                $target =~ s/^\s+//;
+                return 0 if $target eq "" || !is_cmd_readonly($target);
+            }
+        }
         return 0 if $word eq "sed"  && $cmd =~ $SED_SEGMENT_WRITE;
         return 0 if $word eq "sort" && $cmd =~ $SORT_WRITE_FLAG;
         return 0 if $word eq "less" && $cmd =~ $LESS_WRITE_FLAG;
@@ -302,11 +327,70 @@ sub is_cmd_readonly {
 }
 
 
-# Remove safe stderr redirects (2>/dev/null, 2>&1) so they don't false-positive
-# the write-redirect check.
-sub strip_safe_stderr {
+# Split a command string on unquoted shell operators (||, &&, ;, |).
+# Returns an arrayref of segments, or undef if quotes are mismatched (→ defer).
+sub quote_aware_split {
     my ($cmd) = @_;
-    $cmd =~ s/[0-9]+>(?:>?)(?:\/dev\/null|&[0-9]+)//g;
+    my @segments;
+    my $current = "";
+    my $i = 0;
+    my $len = length($cmd);
+    my ($in_single, $in_double) = (0, 0);
+
+    while ($i < $len) {
+        my $c = substr($cmd, $i, 1);
+
+        if ($in_single) {
+            $current .= $c;
+            $in_single = 0 if $c eq "'";
+            $i++;
+        } elsif ($in_double) {
+            if ($c eq '\\' && $i + 1 < $len) {
+                $current .= substr($cmd, $i, 2);
+                $i += 2;
+            } else {
+                $current .= $c;
+                $in_double = 0 if $c eq '"';
+                $i++;
+            }
+        } else {
+            # Unquoted context
+            if ($c eq "'")  { $in_single = 1; $current .= $c; $i++; }
+            elsif ($c eq '"') { $in_double = 1; $current .= $c; $i++; }
+            elsif ($c eq '\\' && $i + 1 < $len) {
+                # Escaped char outside quotes — consume both
+                $current .= substr($cmd, $i, 2); $i += 2;
+            }
+            elsif ($c eq '|' && $i + 1 < $len && substr($cmd, $i+1, 1) eq '|') {
+                push @segments, $current; $current = ""; $i += 2;
+            }
+            elsif ($c eq '&' && $i + 1 < $len && substr($cmd, $i+1, 1) eq '&') {
+                push @segments, $current; $current = ""; $i += 2;
+            }
+            elsif ($c eq ';') { push @segments, $current; $current = ""; $i++; }
+            elsif ($c eq '|') { push @segments, $current; $current = ""; $i++; }
+            else              { $current .= $c; $i++; }
+        }
+    }
+
+    # Mismatched quotes → not safe to classify
+    return undef if $in_single || $in_double;
+
+    push @segments, $current if $current ne "";
+    return \@segments;
+}
+
+
+# Remove safe redirects so they don't false-positive the write-redirect check.
+# Handles: 2>/dev/null, 2>&1, >/dev/null, 1>/dev/null, >>/dev/null, &>/dev/null
+sub strip_safe_redirects {
+    my ($cmd) = @_;
+    # &>/dev/null  (bash shorthand for both streams)
+    $cmd =~ s/&>(?:>?)\/dev\/null//g;
+    # [n]>/dev/null, [n]>>/dev/null  (numbered or bare)
+    $cmd =~ s/[0-9]*>(?:>?)\s*\/dev\/null//g;
+    # [n]>&[m]  (fd duplication, e.g. 2>&1)
+    $cmd =~ s/[0-9]+>&[0-9]+//g;
     return $cmd;
 }
 
@@ -332,12 +416,14 @@ sub classify_bash {
     }
 
     # Check for file-writing redirects (after stripping safe stderr merges).
-    my $for_redirect = strip_safe_stderr($command);
+    my $for_redirect = strip_safe_redirects($command);
     return 0 if $for_redirect =~ $REDIRECT;
 
     # ── Phase 2: Per-segment analysis ──
-    # Split on shell operators (naive — doesn't respect quotes, errs on safe side).
-    my @segments = split(/\|\||&&|;|\|/, $command);
+    # Quote-aware split on shell operators (||, &&, ;, |).
+    my $segments = quote_aware_split($command);
+    return 0 unless defined $segments;   # mismatched quotes → defer
+    my @segments = @$segments;
 
     for my $segment (@segments) {
         # Strip whitespace, subshell parens.
@@ -412,16 +498,6 @@ my $tool_name = json_str($input, "tool_name");
 # ── Check read-only tool allowlists ──
 for my $pattern (@READONLY_TOOL_PATTERNS) {
     approve("Read-only: auto-approved") if $tool_name =~ $pattern;
-}
-
-# ── browser_tabs: needs input-level inspection ──
-if ($tool_name eq "mcp__playwright__browser_tabs") {
-    my $action = json_input_str($input, "action");
-    if ($action eq "list") {
-        approve("Read-only: browser_tabs list");
-    } else {
-        defer();
-    }
 }
 
 # ── Bash command classification ──

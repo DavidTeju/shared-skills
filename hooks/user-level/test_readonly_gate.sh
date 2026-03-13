@@ -65,7 +65,6 @@ run_test "Serena find_symbol"     "mcp__plugin_serena_serena__find_symbol"     '
 run_test "Serena read_memory"     "mcp__plugin_serena_serena__read_memory"     '{"memory_name":"x"}'   "allow"
 run_test "Serena list_memories"   "mcp__plugin_serena_serena__list_memories"   '{}'          "allow"
 run_test "Context7 resolve"       "mcp__context7__resolve-library-id" '{"query":"x","libraryName":"x"}' "allow"
-run_test "Browser snapshot"       "mcp__playwright__browser_snapshot" '{}'                   "allow"
 
 log ""
 log "===Agent spawning (should allow) ==="
@@ -135,9 +134,6 @@ run_test "Serena find_referencing"      "mcp__plugin_serena_serena__find_referen
 run_test "Serena check_onboarding"      "mcp__plugin_serena_serena__check_onboarding_performed" '{}' "allow"
 run_test "Serena get_current_config"    "mcp__plugin_serena_serena__get_current_config" '{}'  "allow"
 run_test "Serena initial_instructions"  "mcp__plugin_serena_serena__initial_instructions" '{}' "allow"
-run_test "Browser take_screenshot"      "mcp__playwright__browser_take_screenshot"      '{}' "allow"
-run_test "Browser console_messages"     "mcp__playwright__browser_console_messages"     '{}' "allow"
-run_test "Browser network_requests"     "mcp__playwright__browser_network_requests"     '{}' "allow"
 
 log ""
 log "===More read-only bash commands (should allow) ==="
@@ -189,6 +185,61 @@ log ""
 log "===Beeper write commands (should ask) ==="
 run_test "beeper send message"              "Bash"  '{"command":"beeper-desktop-cli messages send --chat-id x --text hi"}' ""
 run_test "beeper wrapper send"              "Bash"  '{"command":"scripts/beeper messages send --chat-id x --text hi"}'    ""
+
+log ""
+log "===Playwright CLI read commands (should allow) ==="
+run_test "playwright-cli snapshot"              "Bash"  '{"command":"playwright-cli snapshot"}'                      "allow"
+run_test "playwright-cli snapshot with flag"    "Bash"  '{"command":"playwright-cli snapshot --filename=page.yaml"}' "allow"
+run_test "playwright-cli screenshot"            "Bash"  '{"command":"playwright-cli screenshot"}'                    "allow"
+run_test "playwright-cli screenshot element"    "Bash"  '{"command":"playwright-cli screenshot e5"}'                 "allow"
+run_test "playwright-cli screenshot filename"   "Bash"  '{"command":"playwright-cli screenshot --filename=page.png"}'  "allow"
+run_test "playwright-cli console"               "Bash"  '{"command":"playwright-cli console"}'                       "allow"
+run_test "playwright-cli console warning"       "Bash"  '{"command":"playwright-cli console warning"}'               "allow"
+run_test "playwright-cli network"               "Bash"  '{"command":"playwright-cli network"}'                       "allow"
+run_test "playwright-cli tab-list"              "Bash"  '{"command":"playwright-cli tab-list"}'                      "allow"
+run_test "playwright-cli list sessions"         "Bash"  '{"command":"playwright-cli list"}'                          "allow"
+run_test "playwright-cli cookie-list"           "Bash"  '{"command":"playwright-cli cookie-list"}'                   "allow"
+run_test "playwright-cli cookie-list domain"    "Bash"  '{"command":"playwright-cli cookie-list --domain=example.com"}'  "allow"
+run_test "playwright-cli cookie-get"            "Bash"  '{"command":"playwright-cli cookie-get session_id"}'         "allow"
+run_test "playwright-cli localstorage-list"     "Bash"  '{"command":"playwright-cli localstorage-list"}'             "allow"
+run_test "playwright-cli localstorage-get"      "Bash"  '{"command":"playwright-cli localstorage-get theme"}'        "allow"
+run_test "playwright-cli sessionstorage-list"   "Bash"  '{"command":"playwright-cli sessionstorage-list"}'           "allow"
+run_test "playwright-cli sessionstorage-get"    "Bash"  '{"command":"playwright-cli sessionstorage-get step"}'       "allow"
+run_test "playwright-cli route-list"            "Bash"  '{"command":"playwright-cli route-list"}'                    "allow"
+run_test "playwright-cli with session flag"     "Bash"  '{"command":"playwright-cli -s=mysession snapshot"}'         "allow"
+run_test "npx playwright-cli snapshot"          "Bash"  '{"command":"npx playwright-cli snapshot"}'                  "allow"
+run_test "npx playwright-cli console"           "Bash"  '{"command":"npx playwright-cli console"}'                   "allow"
+
+log ""
+log "===Playwright CLI write commands (should ask) ==="
+run_test "playwright-cli open"                  "Bash"  '{"command":"playwright-cli open https://example.com"}'      ""
+run_test "playwright-cli goto"                  "Bash"  '{"command":"playwright-cli goto https://example.com"}'      ""
+run_test "playwright-cli click"                 "Bash"  '{"command":"playwright-cli click e3"}'                      ""
+run_test "playwright-cli fill"                  "Bash"  '{"command":"playwright-cli fill e5 \"user@example.com\""}'  ""
+run_test "playwright-cli type"                  "Bash"  '{"command":"playwright-cli type \"search query\""}'         ""
+run_test "playwright-cli press"                 "Bash"  '{"command":"playwright-cli press Enter"}'                   ""
+run_test "playwright-cli eval"                  "Bash"  '{"command":"playwright-cli eval \"document.title\""}'       ""
+run_test "playwright-cli run-code"              "Bash"  '{"command":"playwright-cli run-code \"async page => await page.goto(x)\""}'  ""
+run_test "playwright-cli close"                 "Bash"  '{"command":"playwright-cli close"}'                         ""
+run_test "playwright-cli close-all"             "Bash"  '{"command":"playwright-cli close-all"}'                     ""
+run_test "playwright-cli kill-all"              "Bash"  '{"command":"playwright-cli kill-all"}'                      ""
+run_test "playwright-cli delete-data"           "Bash"  '{"command":"playwright-cli delete-data"}'                   ""
+run_test "playwright-cli cookie-set"            "Bash"  '{"command":"playwright-cli cookie-set session_id abc123"}'  ""
+run_test "playwright-cli cookie-delete"         "Bash"  '{"command":"playwright-cli cookie-delete session_id"}'      ""
+run_test "playwright-cli cookie-clear"          "Bash"  '{"command":"playwright-cli cookie-clear"}'                  ""
+run_test "playwright-cli localstorage-set"      "Bash"  '{"command":"playwright-cli localstorage-set theme dark"}'   ""
+run_test "playwright-cli localstorage-delete"   "Bash"  '{"command":"playwright-cli localstorage-delete theme"}'     ""
+run_test "playwright-cli localstorage-clear"    "Bash"  '{"command":"playwright-cli localstorage-clear"}'            ""
+run_test "playwright-cli route"                 "Bash"  '{"command":"playwright-cli route \"**/*.jpg\" --status=404"}'  ""
+run_test "playwright-cli unroute"               "Bash"  '{"command":"playwright-cli unroute"}'                       ""
+run_test "playwright-cli upload"                "Bash"  '{"command":"playwright-cli upload ./doc.pdf"}'              ""
+run_test "playwright-cli pdf"                   "Bash"  '{"command":"playwright-cli pdf --filename=page.pdf"}'       ""
+run_test "playwright-cli tab-new"               "Bash"  '{"command":"playwright-cli tab-new https://example.com"}'   ""
+run_test "playwright-cli tab-close"             "Bash"  '{"command":"playwright-cli tab-close"}'                     ""
+run_test "playwright-cli drag"                  "Bash"  '{"command":"playwright-cli drag e2 e8"}'                    ""
+run_test "playwright-cli state-save"            "Bash"  '{"command":"playwright-cli state-save auth.json"}'          ""
+run_test "playwright-cli tracing-start"         "Bash"  '{"command":"playwright-cli tracing-start"}'                 ""
+run_test "playwright-cli video-start"           "Bash"  '{"command":"playwright-cli video-start"}'                   ""
 
 log ""
 log "===GOG read commands (should allow) ==="
@@ -348,11 +399,8 @@ run_test "kill signal"                       "Bash"  '{"command":"kill -9 1234"}
 
 log ""
 log "===Adversarial: pipeline splitting bypass ==="
-# The perl split uses: s/\|\||&&|;|\|/\n/g — this doesn't respect quotes.
-# FALSE POSITIVE (over-blocking, not a security gap): pipe chars inside quotes get split,
-# causing the hook to see a garbage segment and block. Safe direction — asks user.
-# Fix would require a quote-aware shell parser instead of naive perl split.
-run_test "pipe char in quotes (over-block)" "Bash"  '{"command":"echo \"hello | world\" | grep hello"}'    ""
+# Pipes inside quotes should NOT split the pipeline — quote-aware splitting handles this.
+run_test "pipe char in double quotes"       "Bash"  '{"command":"echo \"hello | world\" | grep hello"}'    "allow"
 # Backtick subshell — the splitting won't see inside backticks
 # KNOWN GAP: commands inside backtick substitution are not analyzed
 run_test "backtick hides rm"                "Bash"  '{"command":"echo `rm -rf /tmp/important`"}'           ""
@@ -418,31 +466,6 @@ run_test "Serena edit_memory"               "mcp__plugin_serena_serena__edit_mem
 run_test "Serena execute_shell_command"     "mcp__plugin_serena_serena__execute_shell_command" '{"command":"rm -rf /"}'  ""
 run_test "Serena activate_project"          "mcp__plugin_serena_serena__activate_project"    '{"project":"evil"}'  ""
 run_test "Serena switch_modes"              "mcp__plugin_serena_serena__switch_modes"        '{"modes":["editing"]}'  ""
-
-log ""
-log "===Adversarial: Playwright action tools (should ask) ==="
-run_test "Browser click"                    "mcp__playwright__browser_click"         '{"ref":"btn1"}'  ""
-run_test "Browser type"                     "mcp__playwright__browser_type"          '{"ref":"input1","text":"hacked"}'  ""
-run_test "Browser navigate"                 "mcp__playwright__browser_navigate"      '{"url":"https://evil.com"}'  ""
-run_test "Browser evaluate JS"              "mcp__playwright__browser_evaluate"      '{"function":"() => document.title"}'  ""
-run_test "Browser fill_form"                "mcp__playwright__browser_fill_form"     '{"fields":[]}'  ""
-run_test "Browser file_upload"              "mcp__playwright__browser_file_upload"   '{"paths":["/etc/passwd"]}'  ""
-run_test "Browser handle_dialog"            "mcp__playwright__browser_handle_dialog" '{"accept":true}'  ""
-run_test "Browser press_key"                "mcp__playwright__browser_press_key"     '{"key":"Enter"}'  ""
-run_test "Browser select_option"            "mcp__playwright__browser_select_option" '{"ref":"sel1","values":["x"]}'  ""
-run_test "Browser drag"                     "mcp__playwright__browser_drag"          '{"startElement":"a","startRef":"r1","endElement":"b","endRef":"r2"}'  ""
-run_test "Browser hover"                    "mcp__playwright__browser_hover"         '{"ref":"el1"}'  ""
-run_test "Browser close"                    "mcp__playwright__browser_close"         '{}'  ""
-run_test "Browser resize"                   "mcp__playwright__browser_resize"        '{"width":800,"height":600}'  ""
-run_test "Browser run_code"                 "mcp__playwright__browser_run_code"      '{"code":"async (page) => { await page.goto(\"evil.com\") }"}'  ""
-run_test "Browser wait_for"                 "mcp__playwright__browser_wait_for"      '{"text":"loaded"}'  ""
-# KNOWN GAP: browser_tabs is in readonly allowlist but "new"/"close"/"select" actions are writes.
-# The hook doesn't inspect tool_input for browser_tabs — it just sees the tool name.
-run_test "Browser tabs list (legit)"        "mcp__playwright__browser_tabs"          '{"action":"list"}'  "allow"
-run_test "Browser new tab (KNOWN GAP)"      "mcp__playwright__browser_tabs"          '{"action":"new"}'  ""
-run_test "Browser close tab (KNOWN GAP)"    "mcp__playwright__browser_tabs"          '{"action":"close","index":0}'  ""
-run_test "Browser select tab (KNOWN GAP)"   "mcp__playwright__browser_tabs"          '{"action":"select","index":1}'  ""
-run_test "Browser tabs missing action"      "mcp__playwright__browser_tabs"          '{}'  ""
 
 log ""
 log "===Adversarial: tool name injection ==="
@@ -644,6 +667,8 @@ run_test "fold wrap"                "Bash"  '{"command":"fold -w 80 long.txt"}' 
 run_test "paste merge"              "Bash"  '{"command":"paste file1.txt file2.txt"}'                 "allow"
 run_test "join files"               "Bash"  '{"command":"join sorted1.txt sorted2.txt"}'              "allow"
 run_test "expand tabs"              "Bash"  '{"command":"expand file.txt"}'                           "allow"
+run_test "base64 decode"            "Bash"  '{"command":"echo dGVzdA== | base64 -d"}'                 "allow"
+run_test "base64 encode"            "Bash"  '{"command":"base64 file.txt"}'                           "allow"
 
 log ""
 log "===Edge: empty and trivial commands ==="
@@ -746,6 +771,26 @@ log "===Anti-overfit: awk internal redirection (no shell >) ==="
 run_test "awk print to file (internal)"        "Bash"  '{"command":"awk '\''BEGIN{print \"x\" > \"/tmp/pwned\"}'\'' data.txt"}'  ""
 run_test "awk append to file (internal)"       "Bash"  '{"command":"awk '\''{print >> \"/tmp/log\"}'\'' input.txt"}'  ""
 run_test "awk pipe to shell (internal)"        "Bash"  '{"command":"awk '\''BEGIN{print \"rm -rf /\" | \"sh\"}'\'' data.txt"}'  ""
+run_test "awk pipe to bash (internal)"        "Bash"  '{"command":"awk '\''BEGIN{print \"id\" | \"bash\"}'\'' data.txt"}'        ""
+run_test "awk pipe to /bin/sh"                "Bash"  '{"command":"awk '\''{print | \"/bin/sh\"}'\'' data.txt"}'                 ""
+run_test "awk pipe to perl"                   "Bash"  '{"command":"awk '\''BEGIN{print \"x\" | \"perl -e system(rm)\"}'\'' f"}'  ""
+run_test "awk pipe to python3"                "Bash"  '{"command":"awk '\''BEGIN{print \"x\" | \"python3 -c ...\"}'\'' f"}'      ""
+run_test "awk pipe to tee (writes)"           "Bash"  '{"command":"awk '\''{print | \"tee /tmp/out\"}'\'' data.txt"}'            ""
+run_test "awk pipe to mail (external)"        "Bash"  '{"command":"awk '\''END{print NR | \"mail -s count admin\"}'\'' f"}'      ""
+
+log ""
+log "===Awk internal pipe: read-only targets should allow ==="
+run_test "awk pipe to sort (readonly)"         "Bash"  '{"command":"ps aux | awk '\''{ print $1 | \"sort\" }'\'' | uniq"}'       "allow"
+run_test "awk pipe to cat (readonly)"          "Bash"  '{"command":"awk '\''{print | \"cat -n\"}'\'' data.txt"}'                 "allow"
+run_test "awk pipe to wc (readonly)"           "Bash"  '{"command":"awk '\''END{print NR | \"wc -l\"}'\'' data.txt"}'            "allow"
+run_test "awk pipe to /bin/sort (path-prefixed)" "Bash" '{"command":"awk '\''{print | \"/bin/sort\"}'\'' data.txt"}'              "allow"
+run_test "awk pipe to /usr/bin/head (path-pref)" "Bash" '{"command":"awk '\''{print | \"/usr/bin/head -5\"}'\'' data.txt"}'       "allow"
+
+log ""
+log "===Awk getline: reverse pipe executes commands (should ask) ==="
+run_test "awk getline from sh"                  "Bash"  '{"command":"awk '\''BEGIN { \"sh\" | getline x }'\'' /dev/null"}'         ""
+run_test "awk getline from bash -c"             "Bash"  '{"command":"awk '\''BEGIN { \"bash -c rm\" | getline }'\'' f"}'           ""
+run_test "awk getline from command"             "Bash"  '{"command":"awk '\''{ \"date\" | getline d; print d }'\'' f"}'            ""
 
 log ""
 log "===Anti-overfit: path-prefixed commands ==="
@@ -815,11 +860,27 @@ run_test "beeper chats create"                 "Bash"  '{"command":"beeper-deskt
 run_test "beeper messages delete"              "Bash"  '{"command":"scripts/beeper messages delete --chat-id x --message-id y"}'  ""
 
 log ""
-log "===Anti-overfit: compound commands the perl splitter mangles ==="
-# The perl split doesn't understand quotes — verify these are handled safely
-run_test "quoted semicolon in arg"             "Bash"  '{"command":"grep \"foo;bar\" file.txt"}'               ""
-run_test "quoted pipe in arg"                  "Bash"  '{"command":"grep \"foo|bar\" file.txt"}'               ""
-run_test "single-quoted &&"                    "Bash"  '{"command":"grep '\''foo && bar'\'' file.txt"}'        ""
+log "===Quote-aware splitting: operators inside quotes should not split ==="
+run_test "quoted semicolon in arg"             "Bash"  '{"command":"grep \"foo;bar\" file.txt"}'               "allow"
+run_test "quoted pipe in arg"                  "Bash"  '{"command":"grep \"foo|bar\" file.txt"}'               "allow"
+run_test "single-quoted &&"                    "Bash"  '{"command":"grep '\''foo && bar'\'' file.txt"}'        "allow"
+run_test "jq with pipe in single quotes"       "Bash"  '{"command":"jq '\''select(.type == \"user\") | .isSidechain'\'' ~/.claude/sessions/test.jsonl | sort | uniq -c | head -5"}'  "allow"
+run_test "gh api --jq with pipe in quotes"     "Bash"  '{"command":"gh api repos/o/r/contributors --jq '\''[.[] | {login: .login}] | .[0:10]'\'' 2>/dev/null"}'  "allow"
+run_test "awk with pipe in single quotes"      "Bash"  '{"command":"ps aux | awk '\''{ print $1 | \"sort\" }'\'' | uniq"}'                    "allow"
+run_test "echo with semicolons in double quotes" "Bash" '{"command":"echo \"one; two; three\" | wc -w"}'       "allow"
+run_test "mixed quotes with operators"         "Bash"  '{"command":"grep '\''a||b'\'' file.txt | grep \"c&&d\" | head"}'  "allow"
+run_test "empty single-quoted string with pipe" "Bash" '{"command":"echo '\'''\'' | cat"}'                     "allow"
+
+log ""
+log "===Quote-aware splitting: regression — real pipes MUST still split ==="
+# Pipes OUTSIDE quotes must still split correctly and catch write commands
+run_test "rm after real pipe"                  "Bash"  '{"command":"echo hello | rm -rf /tmp/x"}'              ""
+run_test "write cmd after quoted arg pipe"     "Bash"  '{"command":"grep \"foo|bar\" file.txt | tee output.txt"}'  ""
+run_test "real semicolon still splits"         "Bash"  '{"command":"ls; rm -rf /tmp/x"}'                       ""
+run_test "real && still splits"                "Bash"  '{"command":"ls && rm -rf /tmp/x"}'                     ""
+run_test "real || still splits"                "Bash"  '{"command":"ls || rm -rf /tmp/x"}'                     ""
+run_test "quoted pipe then real dangerous cmd" "Bash"  '{"command":"echo \"a|b\" | cat; git push origin main"}' ""
+run_test "mismatched quote defers (safe side)" "Bash"  '{"command":"echo '\''unclosed | rm -rf /"}'            ""
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # === Over-blocking: read-only commands the hook doesn't recognize ===
@@ -878,6 +939,11 @@ run_test "traceroute"                      "Bash"  '{"command":"traceroute googl
 run_test "whois"                           "Bash"  '{"command":"whois google.com"}'                        "allow"
 run_test "curl GET (no flags)"             "Bash"  '{"command":"curl https://example.com"}'                "allow"
 run_test "curl -s GET"                     "Bash"  '{"command":"curl -s https://example.com"}'             "allow"
+run_test "curl -sL follow redirects"       "Bash"  '{"command":"curl -sL https://example.com"}'            "allow"
+run_test "curl -H header GET"              "Bash"  '{"command":"curl -H \"Authorization: Bearer tok\" https://api.example.com"}'  "allow"
+run_test "curl --head (HEAD request)"      "Bash"  '{"command":"curl --head https://example.com"}'         "allow"
+run_test "curl -I (HEAD request)"          "Bash"  '{"command":"curl -I https://example.com"}'             "allow"
+run_test "curl piped to jq"                "Bash"  '{"command":"curl -s https://api.example.com/data | jq .name"}'  "allow"
 run_test "ifconfig"                        "Bash"  '{"command":"ifconfig"}'                                "allow"
 run_test "lsof port"                       "Bash"  '{"command":"lsof -i :8080"}'                           "allow"
 run_test "netstat"                         "Bash"  '{"command":"netstat -an"}'                             "allow"
@@ -965,6 +1031,81 @@ run_test "empty \$()"                              "Bash"  '{"command":"echo $()
 # $() with piped inner commands
 run_test "\$() with inner pipe all readonly"       "Bash"  '{"command":"echo $(cat file | grep pattern | wc -l)"}'      "allow"
 run_test "\$() with inner pipe one bad"            "Bash"  '{"command":"echo $(cat file | tee /tmp/out)"}'              ""
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# === Regression: curl write flags dropped in Perl rewrite ===
+# ═══════════════════════════════════════════════════════════════════════════════
+# The Python version checked 15+ curl flags. The Perl rewrite only checks
+# -[XdToF] + basic long-form. These tests cover every flag the Python version
+# caught that could be missing.
+
+log ""
+log "===Curl: flags that imply write/mutation (must defer) ==="
+# --json is implicit POST (Content-Type: application/json + POST method)
+run_test "curl --json (implicit POST)"             "Bash"  '{"command":"curl --json '\''{\"k\":\"v\"}'\'' https://api.example.com"}'  ""
+# -O / --remote-name saves response to a local file named after the URL
+run_test "curl -O (save to local file)"            "Bash"  '{"command":"curl -O https://example.com/file.tar.gz"}'                    ""
+run_test "curl --remote-name"                      "Bash"  '{"command":"curl --remote-name https://example.com/file.tar.gz"}'         ""
+run_test "curl --remote-name-all"                  "Bash"  '{"command":"curl --remote-name-all https://example.com/{a,b}.gz"}'        ""
+# -K / --config reads arbitrary config that can contain any curl options
+run_test "curl -K (arbitrary config)"              "Bash"  '{"command":"curl -K evil-config.txt"}'                                    ""
+run_test "curl --config"                           "Bash"  '{"command":"curl --config evil-config.txt"}'                              ""
+# --libcurl generates a C source file (filesystem write)
+run_test "curl --libcurl (writes C file)"          "Bash"  '{"command":"curl --libcurl output.c https://example.com"}'                ""
+# --trace / --trace-ascii write full request/response trace to a file
+run_test "curl --trace (writes trace file)"        "Bash"  '{"command":"curl --trace trace.log https://example.com"}'                 ""
+run_test "curl --trace-ascii"                      "Bash"  '{"command":"curl --trace-ascii trace.log https://example.com"}'           ""
+# -D / --dump-header writes response headers to a file
+run_test "curl -D (dump headers to file)"          "Bash"  '{"command":"curl -D headers.txt https://example.com"}'                    ""
+run_test "curl --dump-header"                      "Bash"  '{"command":"curl --dump-header headers.txt https://example.com"}'         ""
+# -c / --cookie-jar writes cookies to a file after the request
+run_test "curl -c (cookie jar write)"              "Bash"  '{"command":"curl -c cookies.txt https://example.com"}'                    ""
+run_test "curl --cookie-jar"                       "Bash"  '{"command":"curl --cookie-jar cookies.txt https://example.com"}'          ""
+# --create-dirs creates directories for -o target
+run_test "curl --create-dirs + -o"                 "Bash"  '{"command":"curl --create-dirs -o dir/file.txt https://example.com"}'     ""
+# Combined safe flags should still be fine
+run_test "curl safe combo: -sLI"                   "Bash"  '{"command":"curl -sLI https://example.com"}'                              "allow"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# === Regression: git --ext-diff dropped in Perl rewrite ===
+# ═══════════════════════════════════════════════════════════════════════════════
+# --ext-diff makes git invoke an external diff program, which could be anything.
+# Python version blocked it; Perl version didn't.
+
+log ""
+log "===Git: --ext-diff runs arbitrary external program (must defer) ==="
+run_test "git diff --ext-diff"                     "Bash"  '{"command":"git diff --ext-diff HEAD~1"}'                                 ""
+run_test "git show --ext-diff"                     "Bash"  '{"command":"git show --ext-diff HEAD"}'                                   ""
+run_test "git log -p --ext-diff"                   "Bash"  '{"command":"git log -p --ext-diff HEAD~3..HEAD"}'                         ""
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# === Regression: >/dev/null redirect handling ===
+# ═══════════════════════════════════════════════════════════════════════════════
+# Writing stdout to /dev/null is safe (no file created). The Python version
+# explicitly allowed redirects targeting /dev/null. The Perl rewrite's redirect
+# regex treats ALL > as writes, false-positive on >/dev/null.
+
+log ""
+log "===Redirect to /dev/null (should allow — no file written) ==="
+# Bare stdout to /dev/null (no fd number)
+run_test "stdout >/dev/null"                       "Bash"  '{"command":"cat file >/dev/null"}'                                        "allow"
+run_test "stdout > /dev/null (space)"              "Bash"  '{"command":"cat file > /dev/null"}'                                       "allow"
+# Numbered stdout to /dev/null
+run_test "1>/dev/null"                             "Bash"  '{"command":"cat file 1>/dev/null"}'                                       "allow"
+# Classic combined pattern: stdout to null, stderr follows
+run_test ">/dev/null 2>&1"                         "Bash"  '{"command":"cat file >/dev/null 2>&1"}'                                   "allow"
+# Append to /dev/null (harmless, same effect)
+run_test ">>/dev/null (append to null)"            "Bash"  '{"command":"cat file >>/dev/null"}'                                       "allow"
+# Bash shorthand: both streams to /dev/null
+run_test "&>/dev/null (bash shorthand)"            "Bash"  '{"command":"cat file &>/dev/null"}'                                       "allow"
+
+log ""
+log "===Redirect to /dev/null regression: real file writes must still defer ==="
+# Ensure we didn't accidentally whitelist ALL redirects
+run_test "stdout > real file still defers"         "Bash"  '{"command":"cat file > /tmp/output.txt"}'                                 ""
+run_test "stdout >> real file still defers"        "Bash"  '{"command":"cat file >> /tmp/output.txt"}'                                ""
+run_test "1> real file still defers"               "Bash"  '{"command":"cat file 1>/tmp/output.txt"}'                                 ""
+run_test "> file after /dev/null still defers"     "Bash"  '{"command":"cat file 2>/dev/null > /tmp/output.txt"}'                     ""
 
 log ""
 echo "================================"
