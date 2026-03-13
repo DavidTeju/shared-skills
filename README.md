@@ -5,16 +5,16 @@ All Claude Code / OpenClaw skills in one place. Symlinked into projects via `set
 ## Structure
 
 ```
-skills/
-  beeper/SKILL.md
-  femi-calendar/SKILL.md
-  ...
+skills/           # Skill definitions (SKILL.md per skill)
+hooks/user-level/ # Claude Code hooks (symlinked to ~/.claude/hooks/)
+scripts/          # Helper scripts used by setup.sh
+setup.sh          # Symlinks skills + hooks, registers hooks in settings.json
 ```
 
 ## Setup
 
 ```bash
-# Local (Claude Code) — creates symlinks into user + project skill dirs
+# Local (Claude Code) — symlinks skills + hooks, registers hooks in settings.json
 ./setup.sh local
 
 # Preview what would change
@@ -37,12 +37,14 @@ skills/
 | test-debugging-without-hacking | Engineering patterns |
 | agent-team-orchestration-patterns | Agent/orchestration |
 | bug-basher-5000 | Agent/orchestration |
+| create-cli-skill | Agent/orchestration |
 | claude-code-session-transcript-analysis | Agent/orchestration |
 | claude-code-token-usage | Agent/orchestration |
 | claudeception | Agent/orchestration |
 | code-review | Agent/orchestration |
 | ralph-wiggum-loop-setup | Agent/orchestration |
 | browser-tab-resource-investigation | macOS/system |
+| playwright-cli | macOS/system |
 | swift-macos-native-apis | macOS/system |
 | speech-to-text | macOS/system |
 | gog | Google tools |
