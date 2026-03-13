@@ -31,6 +31,7 @@ USER_SKILLS=(
   # Agent/orchestration
   agent-team-orchestration-patterns
   bug-basher-5000
+  create-cli-skill
   claude-code-session-transcript-analysis
   claude-code-token-usage
   claudeception
@@ -39,6 +40,7 @@ USER_SKILLS=(
 
   # macOS / system
   browser-tab-resource-investigation
+  playwright-cli
   swift-macos-native-apis
   speech-to-text
 
@@ -122,6 +124,43 @@ symlink_skill() {
   echo "  ✓ $skill"
 }
 
+# ═══════════════════════════════════════════════════════════
+# Hook registration in settings.json
+# Maps hook files to their event types for auto-registration.
+# Format: "filename:EventType"
+# ═══════════════════════════════════════════════════════════
+HOOK_REGISTRATIONS=(
+  "readonly-gate.sh:PreToolUse"
+  "claudeception-activator.sh:UserPromptSubmit"
+)
+
+register_hook() {
+  local settings_file="$1"
+  local event_type="$2"
+  local hook_command="$3"
+
+  if $DRY_RUN; then
+    echo "  WOULD REGISTER $event_type → $hook_command in $settings_file"
+    return
+  fi
+
+  python3 "$SCRIPT_DIR/scripts/register_hook.py" "$settings_file" "$event_type" "$hook_command"
+}
+
+unregister_hook() {
+  local settings_file="$1"
+  local hook_command="$2"
+
+  [[ ! -f "$settings_file" ]] && return
+
+  if $DRY_RUN; then
+    echo "  WOULD UNREGISTER $hook_command from $settings_file"
+    return
+  fi
+
+  python3 "$SCRIPT_DIR/scripts/unregister_hook.py" "$settings_file" "$hook_command"
+}
+
 symlink_hook() {
   local file="$1"
   local target_dir="$2"
@@ -174,9 +213,8 @@ setup_local() {
 
   # ── Hooks ──
   local user_hooks="$HOME/.claude/hooks"
-  local pa_hooks="$HOME/projects/personal_assistant_claude/.claude/hooks"
 
-  mkdir -p "$user_hooks" "$pa_hooks"
+  mkdir -p "$user_hooks"
 
   echo ""
   echo "User-level hooks → $user_hooks"
@@ -184,11 +222,29 @@ setup_local() {
     [[ -f "$f" ]] && symlink_hook "$f" "$user_hooks"
   done
 
+  # ── Register hooks in settings.json ──
+  local user_settings="$HOME/.claude/settings.json"
   echo ""
-  echo "Project hooks: personal_assistant_claude → $pa_hooks"
-  for f in "$HOOKS_DIR"/personal-assistant-claude/*; do
-    [[ -f "$f" ]] && symlink_hook "$f" "$pa_hooks"
+  echo "Hook registration → $user_settings"
+  for entry in "${HOOK_REGISTRATIONS[@]}"; do
+    local filename="${entry%%:*}"
+    local event="${entry##*:}"
+    local cmd="~/.claude/hooks/$filename"
+    if [[ -L "$user_hooks/$filename" || -f "$user_hooks/$filename" ]]; then
+      register_hook "$user_settings" "$event" "$cmd"
+      echo "  ✓ $event → $cmd"
+    fi
   done
+
+  # ── Clean stale project-level hook registrations ──
+  # When hooks move from project to user level, remove old entries.
+  local pa_settings="$HOME/projects/personal_assistant_claude/.claude/settings.json"
+  if [[ -f "$pa_settings" ]]; then
+    for entry in "${HOOK_REGISTRATIONS[@]}"; do
+      local filename="${entry%%:*}"
+      unregister_hook "$pa_settings" "\$CLAUDE_PROJECT_DIR/.claude/hooks/$filename"
+    done
+  fi
 
   echo ""
   if $DRY_RUN; then
