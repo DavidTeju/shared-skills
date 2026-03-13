@@ -189,27 +189,33 @@ symlink_hook() {
 # ── Local setup (Claude Code) ──
 setup_local() {
   local claude_user="$HOME/.claude/skills"
-  local claude_pa="$HOME/projects/personal_assistant_claude/.claude/skills"
-  local claude_budget="$HOME/projects/peronal_budget_tracking/.claude/skills"
-
-  mkdir -p "$claude_user" "$claude_pa" "$claude_budget"
+  mkdir -p "$claude_user"
 
   echo "User-level skills → $claude_user"
   for skill in "${USER_SKILLS[@]}"; do
     symlink_skill "$skill" "$claude_user"
   done
 
-  echo ""
-  echo "Project: personal_assistant_claude → $claude_pa"
-  for skill in "${PA_PROJECT_SKILLS[@]}"; do
-    symlink_skill "$skill" "$claude_pa"
-  done
+  # ── Project-specific skills (only if the project exists) ──
+  local claude_pa="$HOME/projects/personal_assistant_claude/.claude/skills"
+  if [[ -d "$HOME/projects/personal_assistant_claude" ]]; then
+    mkdir -p "$claude_pa"
+    echo ""
+    echo "Project: personal_assistant_claude → $claude_pa"
+    for skill in "${PA_PROJECT_SKILLS[@]}"; do
+      symlink_skill "$skill" "$claude_pa"
+    done
+  fi
 
-  echo ""
-  echo "Project: peronal_budget_tracking → $claude_budget"
-  for skill in "${BUDGET_PROJECT_SKILLS[@]}"; do
-    symlink_skill "$skill" "$claude_budget"
-  done
+  local claude_budget="$HOME/projects/peronal_budget_tracking/.claude/skills"
+  if [[ -d "$HOME/projects/peronal_budget_tracking" ]]; then
+    mkdir -p "$claude_budget"
+    echo ""
+    echo "Project: peronal_budget_tracking → $claude_budget"
+    for skill in "${BUDGET_PROJECT_SKILLS[@]}"; do
+      symlink_skill "$skill" "$claude_budget"
+    done
+  fi
 
   # ── Hooks ──
   local user_hooks="$HOME/.claude/hooks"
