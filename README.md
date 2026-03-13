@@ -80,6 +80,22 @@ setup.sh          # Symlinks skills + hooks, registers hooks in settings.json
 | architecture-parity-review | Architecture consistency checks |
 | multi-agent-orchestration | Multi-agent coordination patterns |
 
+## Readonly Gate Hook
+
+The `readonly-gate` hook auto-approves read-only Claude Code tool calls (file reads, searches, git status, etc.) so you aren't prompted for every safe operation. Writes still require confirmation.
+
+**Install (standalone — no need to clone the full repo):**
+
+```bash
+git clone https://github.com/DavidTeju/shared-skills.git /tmp/shared-skills
+bash /tmp/shared-skills/hooks/user-level/install-readonly-gate.sh
+rm -rf /tmp/shared-skills
+```
+
+This copies the hook to `~/.claude/hooks/` and registers it in `~/.claude/settings.json`. Run the install script again anytime to update to the latest version.
+
+To preview what it would do: `bash install-readonly-gate.sh --dry-run`
+
 ## Adding a new skill
 
 1. Create `skills/<name>/SKILL.md`
