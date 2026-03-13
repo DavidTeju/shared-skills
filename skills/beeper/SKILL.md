@@ -70,7 +70,7 @@ beeper chats retrieve --chat-id <chatId>
 
 ```bash
 beeper chats list
-beeper chats list --limit 20
+beeper chats list --max-items 20
 ```
 
 ## Finding Messages
