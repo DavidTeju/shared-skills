@@ -62,6 +62,12 @@ USER_SKILLS=(
   # Writing
   humanizer
 
+  # Svelte
+  svelte-best-practices
+
+  # TypeScript
+  typescript-best-practices
+
   # Vitest
   vitest-class-mocking
   vitest-mock-implementation-persistence
