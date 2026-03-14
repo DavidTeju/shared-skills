@@ -59,6 +59,9 @@ USER_SKILLS=(
   prisma-7-driver-adapter
   prisma-migration-drift-recovery
 
+  # Writing
+  humanizer
+
   # Vitest
   vitest-class-mocking
   vitest-mock-implementation-persistence
