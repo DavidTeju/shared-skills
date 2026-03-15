@@ -45,7 +45,13 @@ If an existing skill exists, ask: **rewrite or patch?**
 
 Decide what goes in. Apply the 80/20 rule ruthlessly.
 
-1. **Ask the user:** What are your top 3-5 use cases for this CLI?
+1. **Ask the user their use cases** using `AskUserQuestion` with a multiSelect question listing
+   3-5 likely use cases you inferred from Phase 1. This is faster than open-ended text and
+   ensures you don't waste turns guessing. Include an "Other" option (auto-provided by the tool)
+   for use cases you didn't anticipate. Frame use cases from the **agent's perspective** — skills
+   are consumed by AI agents, not humans. Focus on: what commands an agent would run, what output
+   shapes it needs to parse, and what safety rails it needs. Human-friendly TUI features are
+   secondary to programmatic/scriptable usage.
 2. For each use case, trace the command chain — what commands, what flags, what outputs feed into what inputs
 3. Run representative commands to capture actual output (especially JSON shapes)
 4. Classify every command:
@@ -146,7 +152,7 @@ description: |
 
 1. Re-run at least one command from each documented workflow — confirm examples work
 2. Check YAML frontmatter is valid
-3. Ask user: route to user-level or project-level?
+3. Ask user via `AskUserQuestion`: route to user-level or project-level?
 4. Add skill name to the appropriate array in `~/projects/shared-skills/setup.sh`
 5. Run `./setup.sh local --dry-run` to preview
 6. Run `./setup.sh local` to activate
