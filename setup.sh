@@ -48,6 +48,9 @@ USER_SKILLS=(
   gog
   google-calendar-ics-timezone-handling
 
+  # Stack Overflow
+  so
+
   # Notion (generic)
   notion-child-page-preservation
   notion-page-link-syntax
