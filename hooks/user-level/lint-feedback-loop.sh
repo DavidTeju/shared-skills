@@ -23,9 +23,9 @@ esac
 FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // ""')
 [[ -z "$FILE_PATH" || ! -f "$FILE_PATH" ]] && exit 0
 
-# Only lint JS/TS files
+# Only lint JS/TS/Svelte files
 case "$FILE_PATH" in
-  *.js|*.ts|*.tsx|*.jsx|*.mjs|*.cjs|*.mts|*.cts) ;;
+  *.js|*.ts|*.tsx|*.jsx|*.mjs|*.cjs|*.mts|*.cts|*.svelte) ;;
   *) exit 0 ;;
 esac
 
@@ -64,6 +64,30 @@ if [[ -x "$PROJECT_ROOT/node_modules/.bin/eslint" ]]; then
 elif command -v eslint &>/dev/null; then
   ESLINT="eslint"
 else
+  exit 0
+fi
+
+# ── Debounce: only the last parallel hook for a given file should lint ──
+# When Claude dispatches multiple parallel edits to the same file, each triggers
+# this hook independently. We use a generation token so only the latest proceeds.
+DEBOUNCE_DIR="/tmp/claude-lint-debounce"
+mkdir -p "$DEBOUNCE_DIR"
+# Clean up stale artifacts older than 60 seconds
+find "$DEBOUNCE_DIR" -type f -mmin +1 -delete 2>/dev/null || true
+
+FILE_KEY=$(echo "$FILE_PATH" | sed 's|/|__|g')
+GEN_FILE="$DEBOUNCE_DIR/${FILE_KEY}.gen"
+MY_ID="$$.$RANDOM"
+
+# Atomic write: temp file + mv (POSIX-guaranteed atomic rename on same filesystem)
+echo "$MY_ID" > "$DEBOUNCE_DIR/${FILE_KEY}.${$}.tmp"
+mv "$DEBOUNCE_DIR/${FILE_KEY}.${$}.tmp" "$GEN_FILE"
+
+# Brief yield to let parallel hooks register their tokens
+sleep 0.3
+
+# If a newer hook superseded us, skip — that hook will lint the final state
+if [[ "$(cat "$GEN_FILE" 2>/dev/null)" != "$MY_ID" ]]; then
   exit 0
 fi
 
