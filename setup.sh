@@ -64,6 +64,7 @@ USER_SKILLS=(
 
   # Writing
   humanizer
+  update-readme
 
   # Svelte
   svelte-best-practices
