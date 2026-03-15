@@ -89,6 +89,7 @@ PA_PROJECT_SKILLS=(
   notion-todo-organization
   querying-and-updating-notion
   swarm-research
+  x-cli
 )
 
 # ── Project: peronal_budget_tracking ──
