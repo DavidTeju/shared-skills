@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-# readonly-gate — Auto-approve read-only tool calls, defer writes to the user.
+# safely-skip-permissions — Auto-approve read-only tool calls, defer writes to the user.
 #
 # HOW IT WORKS:
 #   1. Named tools (Read, Grep, etc.) are checked against an allowlist.

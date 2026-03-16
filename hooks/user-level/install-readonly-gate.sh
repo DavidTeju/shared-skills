@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Install the readonly-gate hook for Claude Code.
+# Install the safely-skip-permissions hook for Claude Code.
 #
 # Copies readonly-gate.sh to ~/.claude/hooks/ and registers it as a
 # PreToolUse hook in ~/.claude/settings.json. Idempotent — safe to re-run.
@@ -96,5 +96,5 @@ print('  ✓ Registered')
 fi
 
 echo ""
-echo "Done. The readonly-gate hook will auto-approve read-only tool calls"
+echo "Done. The safely-skip-permissions hook will auto-approve read-only tool calls"
 echo "in all future Claude Code sessions."

@@ -82,7 +82,7 @@ setup.sh          # Symlinks skills + hooks, registers hooks in settings.json
 
 ## Readonly Gate Hook
 
-The `readonly-gate` hook auto-approves read-only Claude Code tool calls (file reads, searches, git status, etc.) so you aren't prompted for every safe operation. Writes still require confirmation.
+The **safely-skip-permissions** hook (`readonly-gate.sh`) auto-approves read-only Claude Code tool calls (file reads, searches, git status, etc.) so you aren't prompted for every safe operation. Writes still require confirmation.
 
 **Install (standalone — no need to clone the full repo):**
 
