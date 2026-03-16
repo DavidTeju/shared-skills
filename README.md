@@ -96,6 +96,8 @@ This copies the hook to `~/.claude/hooks/` and registers it in `~/.claude/settin
 
 To preview what it would do: `bash install-readonly-gate.sh --dry-run`
 
+Unlike `settings.json`'s config which uses a simple allowlist, this is more intelligent. It's a two-phase bash classifier. Named tools (Read, Grep, Glob, etc.) are checked against an allowlist, but Bash commands go through a pipeline-aware parser that splits on `|`, `&&`, `;`, and `||`, then classifies each segment individually. It handles quoted strings, `$()` command substitutions, environment variable prefixes, dangerous flags on otherwise-safe commands (e.g. `find -exec`, `sed -i`, `awk system()`), output redirects vs. safe `/dev/null` redirects, and multi-word read patterns like `git log`, `gh pr list`, and `gog calendar events`. When in doubt, it defers to the normal permission prompt. The principle is: false negatives are safe, false positives are not.
+
 ## Adding a new skill
 
 1. Create `skills/<name>/SKILL.md`
