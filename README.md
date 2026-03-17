@@ -87,14 +87,22 @@ The **safely-skip-permissions** hook (`readonly-gate.sh`) auto-approves read-onl
 **Install (standalone — no need to clone the full repo):**
 
 ```bash
+# macOS / Linux
 git clone https://github.com/DavidTeju/shared-skills.git /tmp/shared-skills
 bash /tmp/shared-skills/hooks/user-level/install-readonly-gate.sh
 rm -rf /tmp/shared-skills
 ```
 
+```powershell
+# Windows (PowerShell) — requires Perl (e.g. Strawberry Perl) on PATH
+git clone https://github.com/DavidTeju/shared-skills.git $env:TEMP\shared-skills
+& $env:TEMP\shared-skills\hooks\user-level\install-readonly-gate.ps1
+Remove-Item -Recurse -Force $env:TEMP\shared-skills
+```
+
 This copies the hook to `~/.claude/hooks/` and registers it in `~/.claude/settings.json`. Run the install script again anytime to update to the latest version.
 
-To preview what it would do: `bash install-readonly-gate.sh --dry-run`
+To preview what it would do: `bash install-readonly-gate.sh --dry-run` (or `.\install-readonly-gate.ps1 -DryRun` on Windows)
 
 Unlike `settings.json`'s config which uses a simple allowlist, this is more intelligent. It's a two-phase bash classifier. Named tools (Read, Grep, Glob, etc.) are checked against an allowlist, but Bash commands go through a pipeline-aware parser that splits on `|`, `&&`, `;`, and `||`, then classifies each segment individually. It handles quoted strings, `$()` command substitutions, environment variable prefixes, dangerous flags on otherwise-safe commands (e.g. `find -exec`, `sed -i`, `awk system()`), output redirects vs. safe `/dev/null` redirects, and multi-word read patterns like `git log`, `gh pr list`, and `gog calendar events`. When in doubt, it defers to the normal permission prompt. The principle is: false negatives are safe, false positives are not.
 
