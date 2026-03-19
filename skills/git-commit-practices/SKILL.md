@@ -6,6 +6,7 @@ description: |
   commits, meaningful messages, what not to commit, and ensuring commit messages reflect
   all changes in the diff.
 author: David Tejuosho
+user-invocable: true
 ---
 
 # Git Commit Best Practices
@@ -88,9 +89,15 @@ Commit messages must make sense to someone who:
 - Doesn't have your issue tracker
 - Is reading `git log` months later
 
+**Avoid project jargon and internal labels.** Terms like "Phase 1", "Chunk 2",
+"Epic 7", "Sprint 3", or "Milestone 2" are meaningless in `git log`. Describe
+what the code actually does, not which planning bucket it belongs to.
+
 Bad:
 ```
 Fix code review issues #2, #4, #21
+Add Phase 1 chunk roadmap
+Complete Chunk 2 implementation
 ```
 
 Good:
@@ -160,6 +167,7 @@ Before committing, verify:
 6. **"Efficiency" bundling** - Combining multiple features/services/epics to "save time"
 7. **Epic commits** - Listing multiple epics in one commit message (e.g., "Epics 2, 3, 7")
 8. **Mega-features** - "Add entire Phase 4" or "Complete insights feature"
+9. **Project jargon** - "Phase 1", "Chunk 2", "Epic 7", "Sprint 3" — describe what it does, not which planning bucket it's in
 
 ### The Efficiency Trap
 
