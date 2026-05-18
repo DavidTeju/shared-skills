@@ -148,7 +148,6 @@ HOOK_REGISTRATIONS=(
   "eslint-disable-blocker.sh:PreToolUse"
   "eslint-config-protector.sh:PreToolUse"
   "lint-feedback-loop.sh:PostToolUse"
-  "claudeception-activator.sh:UserPromptSubmit"
 )
 
 register_hook() {
