@@ -63,6 +63,7 @@ USER_SKILLS=(
   prisma-migration-drift-recovery
 
   # Writing
+  eli5
   humanizer
   update-readme
 

@@ -35,6 +35,7 @@ setup.sh          # Symlinks skills + hooks, registers hooks in settings.json
 | fix-at-appropriate-layer | Engineering patterns |
 | git-commit-practices | Engineering patterns |
 | test-debugging-without-hacking | Engineering patterns |
+| eli5 | Writing |
 | agent-team-orchestration-patterns | Agent/orchestration |
 | bug-basher-5000 | Agent/orchestration |
 | create-cli-skill | Agent/orchestration |
