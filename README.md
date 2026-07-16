@@ -7,6 +7,7 @@ All Claude Code / OpenClaw skills in one place. Symlinked into projects via `set
 ```
 skills/           # Skill definitions (SKILL.md per skill)
 hooks/user-level/ # Claude Code hooks (symlinked to ~/.claude/hooks/)
+project-hooks/    # Project-level hook systems (installed per-repo, not symlinked)
 scripts/          # Helper scripts used by setup.sh
 setup.sh          # Symlinks skills + hooks, registers hooks in settings.json
 ```
@@ -106,6 +107,32 @@ This copies the hook to `~/.claude/hooks/` and registers it in `~/.claude/settin
 To preview what it would do: `bash install-readonly-gate.sh --dry-run` (or `.\install-readonly-gate.ps1 -DryRun` on Windows)
 
 Unlike `settings.json`'s config which uses a simple allowlist, this is more intelligent. It's a two-phase bash classifier. Named tools (Read, Grep, Glob, etc.) are checked against an allowlist, but Bash commands go through a pipeline-aware parser that splits on `|`, `&&`, `;`, and `||`, then classifies each segment individually. It handles quoted strings, `$()` command substitutions, environment variable prefixes, dangerous flags on otherwise-safe commands (e.g. `find -exec`, `sed -i`, `awk system()`), output redirects vs. safe `/dev/null` redirects, and multi-word read patterns like `git log`, `gh pr list`, and `gog calendar events`. When in doubt, it defers to the normal permission prompt. The principle is: false negatives are safe, false positives are not.
+
+## Project-level hooks
+
+Unlike the user-level hooks above (symlinked into `~/.claude/hooks/` for every project),
+`project-hooks/` holds hook systems that install **into a specific repo's** `.claude/` and
+`.github/`. They are not touched by `setup.sh` — each ships its own installer.
+
+### skill-gate
+
+[`project-hooks/skill-gate/`](project-hooks/skill-gate/) makes sure the **right skill is loaded
+before a gated workflow runs** — reminding on matching prompts and blocking gated commands/MCP calls
+until the skill is loaded. One shared engine drives both **Claude Code** and the **GitHub Copilot
+CLI**. The shipped gates cover skills in this repo (`git-commit-practices`, `code-review`,
+`playwright-cli`, `update-readme`, `create-cli-skill`); edit `skill-gates.json` to fit any repo.
+
+**Install into a repo (standalone):**
+
+```bash
+git clone https://github.com/DavidTeju/shared-skills.git /tmp/shared-skills
+node /tmp/shared-skills/project-hooks/skill-gate/install.mjs /path/to/repo   # add --dry-run to preview
+rm -rf /tmp/shared-skills
+```
+
+The installer copies the runtime files and registers the hooks in the target repo's
+`.claude/settings.json` and `.github/hooks/hooks.json` (idempotent). See the
+[skill-gate README](project-hooks/skill-gate/README.md) for gates, schema, and tests.
 
 ## Adding a new skill
 

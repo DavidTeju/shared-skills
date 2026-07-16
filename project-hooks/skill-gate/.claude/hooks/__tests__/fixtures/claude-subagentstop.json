@@ -1,0 +1,8 @@
+{
+    "session_id": "11111111-2222-3333-4444-555555555555",
+    "transcript_path": "/tmp/transcript",
+    "cwd": "/home/dev/project",
+    "hook_event_name": "SubagentStop",
+    "agent_id": "agent_sub_1",
+    "agent_type": "Explore"
+}

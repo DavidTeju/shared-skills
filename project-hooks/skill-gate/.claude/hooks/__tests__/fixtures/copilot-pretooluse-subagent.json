@@ -1,0 +1,7 @@
+{
+    "sessionId": "call_D5jIWYsQB8Plxnm6e4C0aBxq",
+    "timestamp": 1779907706785,
+    "cwd": "/home/dev/project",
+    "toolName": "powershell",
+    "toolArgs": "{\"command\":\"git commit -m from-subagent\"}"
+}

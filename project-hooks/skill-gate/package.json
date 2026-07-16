@@ -1,0 +1,12 @@
+{
+    "name": "skill-gate",
+    "version": "1.0.0",
+    "private": true,
+    "description": "Agent hooks that make sure the right skill is loaded before a gated workflow runs (Claude Code + GitHub Copilot CLI).",
+    "type": "module",
+    "scripts": {
+        "test": "node --test .claude/hooks/__tests__/skill-gate-core.test.mjs .claude/hooks/__tests__/skill-gate-copilot.test.mjs .claude/hooks/__tests__/skill-gate-claude.test.mjs",
+        "install-into": "node install.mjs"
+    },
+    "license": "MIT"
+}

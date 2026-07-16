@@ -1,0 +1,45 @@
+{
+    "comment": "Canonical skill-gate manifest. Read skill-gate.md for the schema and authoring guide. Each gate names a skill that must be loaded before the matching prompt/command/MCP action proceeds. The skills referenced here live in this repo's skills/ folder.",
+    "version": 1,
+    "gates": [
+        {
+            "skill": "git-commit-practices",
+            "prompt_match": {
+                "regex": "\\b(commit\\s+(these|my|the|all)\\s+changes?|git\\s+commit)\\b"
+            },
+            "remind_message": "[skill-gate] About to work on a git commit. Load the `git-commit-practices` skill first — it covers atomic commits, meaningful messages, and what not to commit.",
+            "tool_match": {
+                "command_regex": "\\bgit\\s+commit\\b"
+            },
+            "block_message": "About to run git commit. Load the git-commit-practices skill via the Skill tool first — it enforces atomic commits and meaningful messages."
+        },
+        {
+            "skill": "code-review",
+            "prompt_match": {
+                "regex": "\\b(code\\s*review|review\\s+(my|this|the)\\s+(code|pr|branch|changes)|find\\s+bugs|security\\s+audit)\\b"
+            },
+            "remind_message": "[skill-gate] Detected a code-review request. Load the `code-review` skill first — it runs a structured, severity-ordered review across security, bugs, edge cases, and quality."
+        },
+        {
+            "skill": "playwright-cli",
+            "tool_match": {
+                "command_regex": "(^|[\\s/&|;])playwright-cli(\\s|$)"
+            },
+            "block_message": "About to drive the browser with playwright-cli. Load the playwright-cli skill via the Skill tool first — it covers sessions, storage state, and the CLI surface."
+        },
+        {
+            "skill": "update-readme",
+            "prompt_match": {
+                "regex": "\\b(update\\s+(the\\s+)?readme|sync\\s+(the\\s+)?docs|docs?\\s+are\\s+stale|is\\s+the\\s+readme\\s+(accurate|up\\s*to\\s*date))\\b"
+            },
+            "remind_message": "[skill-gate] Detected a docs/README update request. Load the `update-readme` skill first — it makes targeted correctness fixes without rewriting the author's voice."
+        },
+        {
+            "skill": "create-cli-skill",
+            "prompt_match": {
+                "regex": "\\b(create\\s+(a\\s+)?skill|new\\s+cli\\s+skill|write\\s+a\\s+skill\\s+for|document\\s+.+\\s+for\\s+agents)\\b"
+            },
+            "remind_message": "[skill-gate] Detected a request to author a CLI skill. Load the `create-cli-skill` skill first — it runs the discover → analyze → generate → verify pipeline."
+        }
+    ]
+}
